@@ -83,7 +83,10 @@ class User extends ActiveRecord implements IdentityInterface
         $saultAndHiddenPass = $this->hidePass($password);
         $this->sault = $saultAndHiddenPass['sault'];
         $this->password = $saultAndHiddenPass['saultedPass'];
+        $this->created = date('Y-m-d H:i:s');
+        
         $this->save(false);
+        return true;
         /*
         $this->insert(false, [
             'userName' => $userName,
