@@ -14,7 +14,9 @@ class TestdbController extends Controller
 {
     public function actionIndex()
     {
-        $model = new tblUsers();
+        $users = new tblUsers();
+        $model = $users::find()->where(['id' => 1])->one();
+
         return $this->render('index', ['model' => $model]);
     }
 }

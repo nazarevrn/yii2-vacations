@@ -9,3 +9,7 @@ yii.bat migrate/create create_tblUsers
 показать все новые миграции
 yii.bat migrate/new all
 прменить миграцию
+yii.bat migrate
+
+из git bash
+php yii migrate
