@@ -7,13 +7,13 @@
 use yii\helpers\Html;
 use yii\bootstrap\ActiveForm;
 
-$this->title = 'Вход';
+$this->title = 'Регистрация';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="site-login">
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <p>Заполните поля:</p>
+    <p>Заполните следующие поля:</p>
 
     <?php $form = ActiveForm::begin([
         'id' => 'login-form',
@@ -23,17 +23,13 @@ $this->params['breadcrumbs'][] = $this->title;
             'labelOptions' => ['class' => 'col-lg-1 control-label'],
         ],
     ]); ?>
-
-        <?= $form->field($model, 'username')->textInput(['autofocus' => true]) ?>
-
-        <?= $form->field($model, 'password')->passwordInput() ?>
-
-
-
+        <?= $form->field($model, 'fullName')->textInput(['autofocus' => true])->label('ФИО') ?>
+        <?= $form->field($model, 'username')->label('Логин') ?>
+        <?= $form->field($model, 'password')->passwordInput()->label('Пароль') ?>
+        <?= $form->field($model, 'email') ?>
         <div class="form-group">
             <div class="col-lg-offset-1 col-lg-11">
-                <?= Html::submitButton('Вход', ['class' => 'btn btn-primary', 'name' => 'login-button']) ?>
-                <?= Html::a('Регистрация', 'register/', ['class' => 'btn btn-danger']) ?>
+                <?= Html::submitButton('Регистрация', ['class' => 'btn btn-danger', 'name' => 'register-button']) ?>
             </div>
         </div>
 

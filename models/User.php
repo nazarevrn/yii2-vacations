@@ -19,7 +19,7 @@ class User extends ActiveRecord implements IdentityInterface
 
 
 
-    public function load($user)
+    public function login($user)
     {
         
         if ($this->findByUsername($user['username'])) {
@@ -67,6 +67,35 @@ class User extends ActiveRecord implements IdentityInterface
         if ( $userInDb->password === hash('sha512', $password . $userInDb->sault)) {
             return true;
         }
+
+    }
+
+    public function register($user)
+    {
+        $this->fullName = $user['fullName'];
+        $this->username = $user['username'];
+        $splitUsername = explode(' ', $this->fullName);
+
+        $this->shortName = $splitUsername[0] . ' ' . mb_substr($splitUsername[1], 0, 1) . '. ' . mb_substr($splitUsername[2], 0, 1) . '.';
+        $password = $user['password'];
+        $this->email = $user['email'];
+
+        $saultAndHiddenPass = $this->hidePass($password);
+        $this->sault = $saultAndHiddenPass['sault'];
+        $this->password = $saultAndHiddenPass['saultedPass'];
+        $this->save(false);
+        /*
+        $this->insert(false, [
+            'userName' => $userName,
+            'password' => $password,
+            'sault'     => $sault,
+            'email'     => $email,
+            'shortName' => $shortName,
+            'fullName'  => $fullName,
+            
+
+        ]);
+        */
 
     }
 
