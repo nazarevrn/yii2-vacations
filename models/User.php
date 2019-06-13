@@ -22,14 +22,15 @@ class User extends ActiveRecord implements IdentityInterface
     public function load($user)
     {
         
-        if (self::findByUsername($user['username'])) {
-            //return true;
-            //проверить пароль
-            if( self::findByUsername($user['username'], $user['password']) ) {
+        if ($this->findByUsername($user['username'])) {
+
+            if( $this->checkPassword($user['username'], $user['password']) ) {
                 return true;
+            } else {
+                return false;
             }
         } else {
-            return 'login wrong!';
+            return false; //неверный логин
         }
         
         
@@ -37,7 +38,7 @@ class User extends ActiveRecord implements IdentityInterface
 
     public function findByUsername($username) 
     {        
-        if(self::find()->where(['username' => $username])->one()) {
+        if($this->find()->where(['username' => $username])->one()) {
             return true;
         }
         return false;
@@ -50,7 +51,7 @@ class User extends ActiveRecord implements IdentityInterface
         
         $randString = '0';
         for ($i = 0; $i < 10; $i++) {
-            $randstring .= $characters[rand(0, strlen($characters) - 1)];
+            $randString .= $characters[rand(0, strlen($characters) - 1)];
         }
         $sault = hash('sha512', $randString);
         return [
@@ -61,7 +62,7 @@ class User extends ActiveRecord implements IdentityInterface
 
     public function checkPassword($username, $password)
     {
-        $userInDb = self::find()->where(['username' => $username])->one();
+        $userInDb = $this->find()->where(['username' => $username])->one();
 
         if ( $userInDb->password === hash('sha512', $password . $userInDb->sault)) {
             return true;
