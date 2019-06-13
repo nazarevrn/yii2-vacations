@@ -3,7 +3,7 @@
 
 use yii\helpers\Html;
 print '<pre>';
-print_r($model);
+var_dump($model);
 print '</pre>';
 die;
 ?>

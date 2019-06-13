@@ -13,3 +13,6 @@ yii.bat migrate
 
 из git bash
 php yii migrate
+
+авторизация пока так
+yii-vacations.local/user/login/

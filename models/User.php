@@ -1,74 +1,99 @@
 <?php
-
 namespace app\models;
 
-class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
+use yii\db\ActiveRecord;
+use yii\web\IdentityInterface;
+/*
+в этом классе я скрещаю жабу с гадюкой. пароли храним в солёном виде, для каждого пользователя - соль уникальна.
+до специального коммента - идёт мой велосипед, дальше - родной функционал yii из мануала
+TO-DO
+по-хорошему, эту срань надо заменить на https://www.yiiframework.com/doc/api/2.0/yii-base-security#generatePasswordHash()-detail
+*/
+class User extends ActiveRecord implements IdentityInterface
 {
-    public $id;
-    public $username;
-    public $password;
-    public $authKey;
-    public $accessToken;
-
-    private static $users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];
+    
+    public static function tableName()
+    {
+        return '{{tblUsers}}';
+    }
 
 
+
+    public function load($user)
+    {
+        
+        if (self::findByUsername($user['username'])) {
+            //return true;
+            //проверить пароль
+            if( self::findByUsername($user['username'], $user['password']) ) {
+                return true;
+            }
+        } else {
+            return 'login wrong!';
+        }
+        
+        
+    }
+
+    public function findByUsername($username) 
+    {        
+        if(self::find()->where(['username' => $username])->one()) {
+            return true;
+        }
+        return false;
+
+    }
+
+    public static function hidePass($password)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        
+        $randString = '0';
+        for ($i = 0; $i < 10; $i++) {
+            $randstring .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        $sault = hash('sha512', $randString);
+        return [
+                'sault'         =>  $sault,
+                'saultedPass'   =>  hash('sha512', $password . $sault) //ну да, просто. надо придумать что-то похитрее, но лень
+                ];
+    }
+
+    public function checkPassword($username, $password)
+    {
+        $userInDb = self::find()->where(['username' => $username])->one();
+
+        if ( $userInDb->password === hash('sha512', $password . $userInDb->sault)) {
+            return true;
+        }
+
+    }
+
+    //здесь и далее копипаста из мана https://www.yiiframework.com/doc/guide/2.0/ru/security-authentication
     /**
-     * {@inheritdoc}
+     * Finds an identity by the given ID.
+     *
+     * @param string|int $id the ID to be looked for
+     * @return IdentityInterface|null the identity object that matches the given ID.
      */
     public static function findIdentity($id)
     {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
+        return static::findOne($id);
     }
 
     /**
-     * {@inheritdoc}
+     * Finds an identity by the given token.
+     *
+     * @param string $token the token to be looked for
+     * @return IdentityInterface|null the identity object that matches the given token.
      */
     public static function findIdentityByAccessToken($token, $type = null)
     {
-        foreach (self::$users as $user) {
-            if ($user['accessToken'] === $token) {
-                return new static($user);
-            }
-        }
-
-        return null;
+        return static::findOne(['access_token' => $token]);
     }
 
     /**
-     * Finds user by username
-     *
-     * @param string $username
-     * @return static|null
-     */
-    public static function findByUsername($username)
-    {
-        foreach (self::$users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
-                return new static($user);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
+     * @return int|string current user ID
      */
     public function getId()
     {
@@ -76,29 +101,22 @@ class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @return string current user auth key
      */
     public function getAuthKey()
     {
-        return $this->authKey;
+        return $this->auth_key;
     }
 
     /**
-     * {@inheritdoc}
+     * @param string $authKey
+     * @return bool if auth key is valid for current user
      */
     public function validateAuthKey($authKey)
     {
-        return $this->authKey === $authKey;
+        return $this->getAuthKey() === $authKey;
     }
 
-    /**
-     * Validates password
-     *
-     * @param string $password password to validate
-     * @return bool if password provided is valid for current user
-     */
-    public function validatePassword($password)
-    {
-        return $this->password === $password;
-    }
+
+
 }
