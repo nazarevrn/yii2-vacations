@@ -70,23 +70,41 @@ class User extends ActiveRecord implements IdentityInterface
 
     }
 
-    public function register($user)
-    {
-        $this->fullName = $user['fullName'];
-        $this->username = $user['username'];
-        $splitUsername = explode(' ', $this->fullName);
+    public function isUnique($user) {
+        $login = $user['username'];
+        $email = $user['email'];
+        $userInDB = $this->find()->where(['username' => $login])->orWhere(['email' => $email])->one();
+        if ($userInDB) {
+            return false;
+        }
 
-        $this->shortName = $splitUsername[0] . ' ' . mb_substr($splitUsername[1], 0, 1) . '. ' . mb_substr($splitUsername[2], 0, 1) . '.';
-        $password = $user['password'];
-        $this->email = $user['email'];
-
-        $saultAndHiddenPass = $this->hidePass($password);
-        $this->sault = $saultAndHiddenPass['sault'];
-        $this->password = $saultAndHiddenPass['saultedPass'];
-        $this->created = date('Y-m-d H:i:s');
-        
-        $this->save(false);
         return true;
+
+    }
+
+    public function register($user)
+    {   
+        if ( !$this->isUnique($user) ) {
+            return false;
+        } else {
+            $this->fullName = $user['fullName'];
+            $this->username = $user['username'];
+            $splitUsername = explode(' ', $this->fullName);
+    
+            $this->shortName = $splitUsername[0] . ' ' . mb_substr($splitUsername[1], 0, 1) . '. ' . mb_substr($splitUsername[2], 0, 1) . '.';
+            $password = $user['password'];
+            $this->email = $user['email'];
+    
+            $saultAndHiddenPass = $this->hidePass($password);
+            $this->sault = $saultAndHiddenPass['sault'];
+            $this->password = $saultAndHiddenPass['saultedPass'];
+            $this->created = date('Y-m-d H:i:s');
+            
+            $this->save(false);
+            return true;
+        }
+
+
         /*
         $this->insert(false, [
             'userName' => $userName,
